@@ -1,6 +1,6 @@
 # 🏛️ ArquiGen Pro: Generador Arquitectónico Paramétrico
 
-**ArquiGen Pro** es una herramienta web interactiva diseñada para la automatización de distribuciones arquitectónicas en lotes estándar de **6m x 15m (90m²)**. El sistema genera propuestas de planta baja cumpliendo con criterios espaciales y técnicos.
+**ArquiGen Pro** es una herramienta web interactiva diseñada para la automatización de distribuciones arquitectónicas en lotes estándar de **6m x 15m (90m²)**. El sistema genera propuestas de planta baja cumpliendo con criterios espaciales y técnicos, ademas permite ubicar los mobiliarios segun las necesidades del usuario.
 
 ## 🚀 Características Principales
 - **Escala Técnica 1:50:** Visualización precisa con grosores de muro reales (0.15m).
