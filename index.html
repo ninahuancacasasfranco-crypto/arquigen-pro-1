@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArquiGen - CAD Paramétrico</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-mode">
+    <div class="app-container">
+        <!-- Sidebar Izquierdo -->
+        <aside class="sidebar">
+            <header class="logo-section">
+                <h1>ArquiGen</h1>
+                <p>Generador Arq. Paramétrico</p>
+            </header>
+
+            <section class="controls-section">
+                <h3>Opciones de Diseño</h3>
+                <div class="proposals-group" id="proposals-group">
+                    <button class="btn active" data-prop="1">Propuesta 1<br><small>Clásica</small></button>
+                    <button class="btn" data-prop="2">Propuesta 2<br><small>Eficiente</small></button>
+                    <button class="btn" data-prop="3">Propuesta 3<br><small>Patio Lateral</small></button>
+                </div>
+            </section>
+
+            <section class="stats-section">
+                <h3>Normativa RNE</h3>
+                <div class="stats-card">
+                    <div class="stat-item">
+                        <span class="stat-label">Área Terreno</span>
+                        <span class="stat-value" id="val-terreno">90.00 m²</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Área Techada (Max 63m²)</span>
+                        <span class="stat-value highlight-warn" id="val-techada">0.00 m²</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Área Libre (Min 27m²)</span>
+                        <span class="stat-value highlight-success" id="val-libre">0.00 m²</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">% Área Libre</span>
+                        <span class="stat-value" id="val-porcentaje">0%</span>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="export-section" style="margin-top: 1.5rem;">
+                <button id="btn-export" class="btn active" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--cad-text); color: var(--bg-color); font-weight: 600;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Exportar / Imprimir PDF
+                </button>
+            </section>
+        </aside>
+
+        <!-- Área Principal de Trabajo (Canvas) -->
+        <main class="canvas-area">
+            <div class="canvas-header">
+                <h2>Lote Base: 6.00m x 15.00m</h2>
+            </div>
+            
+            <div class="svg-container">
+                <!-- Se dibuja paramétricamente usando viewBox para manejar escala real (metros) -->
+                <svg id="cad-canvas" xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 10 19">
+                    <defs>
+                        <!-- Texturas de pisos -->
+                        <pattern id="grid" width="1" height="1" patternUnits="userSpaceOnUse">
+                            <path d="M 1 0 L 0 0 0 1" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.05"/>
+                        </pattern>
+                        <pattern id="tile-floor" width="0.6" height="0.6" patternUnits="userSpaceOnUse">
+                            <rect width="0.6" height="0.6" fill="#1e293b" />
+                            <path d="M 0.6 0 L 0 0 0 0.6" fill="none" stroke="#334155" stroke-width="0.02"/>
+                        </pattern>
+                        <pattern id="wood-floor" width="1" height="0.2" patternUnits="userSpaceOnUse">
+                            <rect width="1" height="0.2" fill="#292524" />
+                            <path d="M 0 0 L 1 0" fill="none" stroke="#44403c" stroke-width="0.01"/>
+                            <path d="M 0.3 0 L 0.3 0.2 M 0.8 0 L 0.8 0.2" fill="none" stroke="#44403c" stroke-width="0.01"/>
+                        </pattern>
+                        <pattern id="grass-pattern" width="0.4" height="0.4" patternUnits="userSpaceOnUse">
+                            <rect width="0.4" height="0.4" fill="#064e3b" />
+                            <circle cx="0.1" cy="0.1" r="0.02" fill="#10b981" />
+                            <circle cx="0.3" cy="0.3" r="0.03" fill="#10b981" />
+                        </pattern>
+
+                        <!-- Máscara para recortar muros -->
+                        <mask id="wall-cut-mask">
+                            <rect id="mask-bg" x="-2" y="-2" width="10" height="19" fill="white" />
+                            <g id="mask-holes"></g>
+                        </mask>
+                    </defs>
+
+                    <!-- Fondo cuadriculado -->
+                    <rect x="-20" y="-20" width="40" height="40" fill="url(#grid)" />
+
+                    <!-- Grupo Principal del Lote -->
+                    <g id="lote-group" transform="translate(0,0)">
+                        <!-- Límite de Propiedad -->
+                        <rect x="0" y="0" width="6" height="15" fill="none" stroke="#e2e8f0" stroke-width="0.03" stroke-dasharray="0.2,0.2" />
+                        <text x="3" y="-0.3" class="cad-label bold" text-anchor="middle" font-size="0.28">CALLE PRINCIPAL (INGRESO)</text>
+                        
+                        <!-- Capas -->
+                        <g id="ambientes-layer"></g>
+                        <g id="muros-layer" mask="url(#wall-cut-mask)"></g>
+                        <g id="vanos-layer"></g> <!-- Puertas y ventanas en lo cortado -->
+                        <g id="mobiliario-layer"></g>
+                        <g id="cotas-layer"></g> <!-- Niveles, textos -->
+                    </g>
+                </svg>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
